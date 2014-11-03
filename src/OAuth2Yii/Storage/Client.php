@@ -25,9 +25,9 @@ class Client extends DbStorage implements ClientInterface, ClientCredentialsInte
     protected function createTable()
     {
         $this->getDb()->createCommand()->createTable($this->getTableName(), array(
-            'client_id'     => 'string NOT NULL PRIMARY KEY',
-            'client_secret' => 'string NOT NULL',
-            'redirect_uri'  => 'text NOT NULL',
+            'ClientId'     => 'string NOT NULL PRIMARY KEY',
+            'ClientSecret' => 'string NOT NULL',
+            'RedirectUri'  => 'text NOT NULL',
         ));
     }
 
@@ -40,7 +40,7 @@ class Client extends DbStorage implements ClientInterface, ClientCredentialsInte
     public function getClientDetails($client_id)
     {
         $sql = sprintf(
-            'SELECT client_id,redirect_uri FROM %s WHERE client_id=:id',
+            'SELECT ClientId,RedirectUri FROM %s WHERE ClientId=:id',
             $this->getTableName()
         );
         return $this->getDb()->createCommand($sql)->queryRow(true, array(':id'=>$client_id));
@@ -55,8 +55,8 @@ class Client extends DbStorage implements ClientInterface, ClientCredentialsInte
     public function checkRestrictedGrantType($client_id, $grant_type)
     {
         $details = $this->getClientDetails($client_id);
-        if (isset($details['grant_types'])) {
-            return in_array($grant_type, $details['grant_types']);
+        if (isset($details['GrantTypes'])) {
+            return in_array($grant_type, $details['GrantTypes']);
         }
         return true;
     }
@@ -71,11 +71,34 @@ class Client extends DbStorage implements ClientInterface, ClientCredentialsInte
     public function checkClientCredentials($client_id, $client_secret = null)
     {
         $sql = sprintf(
-            'SELECT client_secret FROM %s WHERE client_id=:id',
+            'SELECT ClientSecret FROM %s WHERE ClientId=:id',
             $this->getTableName()
         );
         $hash = $this->getDb()->createCommand($sql)->queryScalar(array(':id'=>$client_id));
 
         return md5($client_secret) === $hash;
+    }
+
+    public function getClientScope($client_id)
+    {
+        if (!$clientDetails = $this->getClientDetails($client_id)) {
+            return false;
+        }
+        if (isset($clientDetails['scope'])) {
+            return $clientDetails['scope'];
+        }
+        return null;
+    }
+
+    public function isPublicClient($client_id)
+    {
+        $stmt = $this->db->prepare(sprintf('SELECT * from %s where client_id = :client_id', $this->getTableName()));
+        $stmt->execute(compact('client_id'));
+
+        if (!$result = $stmt->fetch()) {
+            return false;
+        }
+
+        return empty($result['client_secret']);
     }
 }
