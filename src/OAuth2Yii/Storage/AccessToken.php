@@ -46,7 +46,7 @@ class AccessToken extends DbStorage implements AccessTokenInterface
      * Required by OAuth2\Storage\AccessTokenInterfaces
      *
      * @param mixed $token the access token
-     * @return null|array with keys ClientId, UserId, Expires and (optional) Scope, null if not found
+     * @return null|array with keys client_id, user_id, expires and (optional) scope, null if not found
      */
     public function getAccessToken($token)
     {
@@ -56,7 +56,7 @@ class AccessToken extends DbStorage implements AccessTokenInterface
         YII_DEBUG && Yii::trace("Querying access token $token",'oauth2.storage.accesstoken');
 
         $sql = sprintf(
-            'SELECT ClientId,UserId,Expires,Scope FROM %s WHERE AccessToken=:token',
+            'SELECT ClientId AS client_id, UserId AS user_id, Expires AS expires, Scope AS scope FROM %s WHERE AccessToken=:token',
             $this->getTableName()
         );
         $result = $this->getDb()->createCommand($sql)->queryRow(true, array(':token'=>$token));
@@ -69,15 +69,15 @@ class AccessToken extends DbStorage implements AccessTokenInterface
         YII_DEBUG && Yii::trace(
             sprintf("Access token found: %s, client_id: %s, user_id: %s, expires: %s, scope: %s",
                 $token,
-                $result['ClientId'],
-                $result['UserId'],
-                $result['Expires'],
-                $result['Scope']
+                $result['client_id'],
+                $result['user_id'],
+                $result['expires'],
+                $result['scope']
             ),
             'oauth2.storage.accesstoken'
         );
 
-        $result['Expires'] = strtotime($result['Expires']);
+        $result['expires'] = strtotime($result['expires']);
 
         $this->_tokens[$token] = $result;
 

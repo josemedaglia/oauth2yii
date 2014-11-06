@@ -40,7 +40,7 @@ class Client extends DbStorage implements ClientInterface, ClientCredentialsInte
     public function getClientDetails($client_id)
     {
         $sql = sprintf(
-            'SELECT ClientId,RedirectUri FROM %s WHERE ClientId=:id',
+            'SELECT ClientId AS client_id, RedirectUri AS redirect_uri FROM %s WHERE ClientId=:id',
             $this->getTableName()
         );
         return $this->getDb()->createCommand($sql)->queryRow(true, array(':id'=>$client_id));
@@ -55,8 +55,8 @@ class Client extends DbStorage implements ClientInterface, ClientCredentialsInte
     public function checkRestrictedGrantType($client_id, $grant_type)
     {
         $details = $this->getClientDetails($client_id);
-        if (isset($details['GrantTypes'])) {
-            return in_array($grant_type, $details['GrantTypes']);
+        if (isset($details['grant_types'])) {
+            return in_array($grant_type, $details['grant_types']);
         }
         return true;
     }
@@ -71,7 +71,7 @@ class Client extends DbStorage implements ClientInterface, ClientCredentialsInte
     public function checkClientCredentials($client_id, $client_secret = null)
     {
         $sql = sprintf(
-            'SELECT ClientSecret FROM %s WHERE ClientId=:id',
+            'SELECT ClientSecret AS client_secret FROM %s WHERE ClientId=:id',
             $this->getTableName()
         );
         $hash = $this->getDb()->createCommand($sql)->queryScalar(array(':id'=>$client_id));
@@ -92,7 +92,7 @@ class Client extends DbStorage implements ClientInterface, ClientCredentialsInte
 
     public function isPublicClient($client_id)
     {
-        $stmt = $this->db->prepare(sprintf('SELECT * from %s where client_id = :client_id', $this->getTableName()));
+        $stmt = $this->db->prepare(sprintf('SELECT ClientSecret AS client_secret from %s where ClientId = :client_id', $this->getTableName()));
         $stmt->execute(compact('client_id'));
 
         if (!$result = $stmt->fetch()) {
