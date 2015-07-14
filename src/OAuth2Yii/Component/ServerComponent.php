@@ -327,13 +327,15 @@ class ServerComponent extends CApplicationComponent
 
         switch($className) {
             case self::CLASS_ACCESS:
-                $object = new Storage\AccessToken($this, $this->db);
+                //$object = new Storage\AccessToken($this, $this->db);
+                $object = new Storage\Redis\AccessToken($this);
                 break;
             case self::CLASS_AUTHORIZATION:
                 $object = new Storage\AuthorizationCode($this, $this->db);
                 break;
             case self::CLASS_REFRESH:
-                $object = new Storage\RefreshToken($this, $this->db);
+                //$object = new Storage\RefreshToken($this, $this->db);
+                $object = new Storage\Redis\RefreshToken($this);
                 break;
             case self::CLASS_CLIENT:
                 if($this->clientClass) {
