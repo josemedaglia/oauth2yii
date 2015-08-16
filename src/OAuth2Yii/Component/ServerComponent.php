@@ -53,6 +53,11 @@ class ServerComponent extends CApplicationComponent
      * @var string name of CDbConnection app component. Default is 'db'.
      */
     public $db = 'db';
+    
+    /**
+     * @var Cache (redis) configuration
+     */
+    public $cache;
 
     /**
      * @var int lifetime of the access token in seconds. Default is 3600.
@@ -328,14 +333,14 @@ class ServerComponent extends CApplicationComponent
         switch($className) {
             case self::CLASS_ACCESS:
                 //$object = new Storage\AccessToken($this, $this->db);
-                $object = new Storage\Redis\AccessToken($this);
+                $object = new Storage\Redis\AccessToken($this, $this->cache);
                 break;
             case self::CLASS_AUTHORIZATION:
                 $object = new Storage\AuthorizationCode($this, $this->db);
                 break;
             case self::CLASS_REFRESH:
                 //$object = new Storage\RefreshToken($this, $this->db);
-                $object = new Storage\Redis\RefreshToken($this);
+                $object = new Storage\Redis\RefreshToken($this, $this->cache);
                 break;
             case self::CLASS_CLIENT:
                 if($this->clientClass) {
