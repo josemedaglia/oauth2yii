@@ -19,19 +19,18 @@ abstract class RedisStorage extends \OAuth2Yii\Storage\Storage {
     /* Configuration array */
     protected $config;
 
-    public function __construct(\OAuth2Yii\Component\ServerComponent $server, $redis = null)
+    public function __construct(\OAuth2Yii\Component\ServerComponent $server, $redis = [])
     {
         parent::__construct($server);
 
-        //Default to localhost
-        if ($redis == null) {
-            $redis = [
-                'host' => '127.0.0.1',
-                'port' => 6379,
-                'database' => 1
-            ];
-        }
-        $this->redis = new \Predis\Client($redis);
+        //Merges default configuration with provided (if any)
+        $params = array_merge([
+            'host' => '127.0.0.1',
+            'port' => 6379,
+            'database' => 1
+        ], $redis);
+
+        $this->redis = new \Predis\Client($params);
         
         $this->config = array(
             'client_key' => 'oauth_clients:',
